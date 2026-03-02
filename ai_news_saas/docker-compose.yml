@@ -12,8 +12,8 @@ services:
     environment:
       MYSQL_HOST: ${MYSQL_HOST:-mysql}
       MYSQL_PORT: ${MYSQL_PORT:-3306}
-      MYSQL_USER: ${MYSQL_USER:-root}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-root}
+      MYSQL_USER: ${MYSQL_USER:-ai_news}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-ai_news_pass_123}
       MYSQL_DB: ${MYSQL_DB:-ai_news_saas}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       JWT_SECRET: ${JWT_SECRET:-change-me}
@@ -39,8 +39,32 @@ services:
     environment:
       MYSQL_HOST: ${MYSQL_HOST:-mysql}
       MYSQL_PORT: ${MYSQL_PORT:-3306}
-      MYSQL_USER: ${MYSQL_USER:-root}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-root}
+      MYSQL_USER: ${MYSQL_USER:-ai_news}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-ai_news_pass_123}
+      MYSQL_DB: ${MYSQL_DB:-ai_news_saas}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      WECHAT_API_BASE_URL: ${WECHAT_API_BASE_URL:-https://api.weixin.qq.com}
+    volumes:
+      - ./:/app
+    depends_on:
+      - redis
+      - mysql
+
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-news-beat
+    command: celery -A app.tasks.celery_app.celery_app beat -l info
+    env_file:
+      - .env
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST:-mysql}
+      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      MYSQL_USER: ${MYSQL_USER:-ai_news}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-ai_news_pass_123}
       MYSQL_DB: ${MYSQL_DB:-ai_news_saas}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
@@ -66,10 +90,10 @@ services:
     env_file:
       - .env
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_strong_pass_123}
       MYSQL_DATABASE: ${MYSQL_DB:-ai_news_saas}
-      MYSQL_USER: ${MYSQL_USER:-root}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-root}
+      MYSQL_USER: ${MYSQL_USER:-ai_news}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-ai_news_pass_123}
     ports:
       - "${MYSQL_EXPOSE_PORT:-3306}:3306"
     volumes:
