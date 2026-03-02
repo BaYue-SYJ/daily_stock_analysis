@@ -16,7 +16,7 @@ def verify_password(password: str, hashed: str) -> bool:
     return pwd_context.verify(password, hashed)
 
 
-def create_access_token(subject: str, tenant_id: int) -> str:
+def create_access_token(subject: str, tenant_id: int, user_id: int) -> str:
     expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    payload = {"sub": subject, "tenant_id": tenant_id, "exp": expire}
+    payload = {"sub": subject, "tenant_id": tenant_id, "user_id": user_id, "exp": expire}
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)

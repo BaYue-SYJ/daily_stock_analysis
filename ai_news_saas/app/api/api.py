@@ -46,7 +46,7 @@ def mini_login(payload: MiniLoginRequest, db: Session = Depends(db_session)) -> 
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid credentials")
 
-    token = create_access_token(subject=user.email, tenant_id=user.tenant_id)
+    token = create_access_token(subject=user.email, tenant_id=user.tenant_id, user_id=user.id)
     return MiniLoginResponse(access_token=token)
 
 

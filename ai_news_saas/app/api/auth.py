@@ -11,9 +11,15 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=TokenResponse)
 def register(payload: RegisterRequest, db: Session = Depends(db_session)) -> TokenResponse:
-    tenant = Tenant(name=payload.tenant_name)
-    db.add(tenant)
-    db.flush()
+    tenant = db.query(Tenant).filter(Tenant.name == payload.tenant_name).first()
+    if not tenant:
+        tenant = Tenant(name=payload.tenant_name)
+        db.add(tenant)
+        db.flush()
+
+    exists = db.query(User).filter(User.tenant_id == tenant.id, User.email == payload.email).first()
+    if exists:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="email already exists in tenant")
 
     user = User(
         tenant_id=tenant.id,
@@ -23,8 +29,11 @@ def register(payload: RegisterRequest, db: Session = Depends(db_session)) -> Tok
     )
     db.add(user)
     db.commit()
+    db.refresh(user)
 
-    return TokenResponse(access_token=create_access_token(subject=user.email, tenant_id=tenant.id))
+    return TokenResponse(
+        access_token=create_access_token(subject=user.email, tenant_id=tenant.id, user_id=user.id)
+    )
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -41,4 +50,6 @@ def login(payload: LoginRequest, db: Session = Depends(db_session)) -> TokenResp
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid credentials")
 
-    return TokenResponse(access_token=create_access_token(subject=user.email, tenant_id=tenant.id))
+    return TokenResponse(
+        access_token=create_access_token(subject=user.email, tenant_id=tenant.id, user_id=user.id)
+    )
