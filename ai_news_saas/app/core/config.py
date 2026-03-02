@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-4o-mini"
 
+    SUMMARIZER_PROMPT: str = ""
+
     WECHAT_API_BASE_URL: str = "https://api.weixin.qq.com"
 
     @property
